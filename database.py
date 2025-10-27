@@ -288,6 +288,35 @@ class RelationalDatabase:
                 if appointment:
                     result.append(appointment)
         return result
+    def find_appointments_by_date_steps(self, date: DateNew) -> tuple:
+        """
+        Поиск приёмов по дате с подсчётом количества шагов в AVL-дереве.
+        Возвращает (MyList[Appointment], количество_шагов).
+        """
+        node = self.appointment_date_tree.root
+        steps = 0
+        found_node = None
+        
+        # Поиск в AVL-дереве с подсчётом шагов
+        while node:
+            steps += 1
+            if date < node.key:
+                node = node.left
+            elif date > node.key:
+                node = node.right
+            else:
+                found_node = node
+                break
+
+        # Собираем приёмы из найденного узла
+        appointments = MyList[Appointment]()
+        if found_node:
+            for idx in found_node.values:
+                app = self.appointment_arr[idx]
+                if app:
+                    appointments.append(app)
+        
+        return appointments, steps
 
     # --- Формирование отчёта (связующая задача) ---
     def generate_report(self) -> MyList[str]:
