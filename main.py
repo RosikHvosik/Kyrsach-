@@ -1,12 +1,11 @@
-# main.py - Финальная версия с полным функционалом
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, simpledialog
 from database import RelationalDatabase
 from DateNew import DateNew
 
-# --- Глобальная база данных ---
+
 db = RelationalDatabase()
-# ------------------------------
+
 
 class App(tk.Tk):
     def __init__(self):
@@ -14,17 +13,17 @@ class App(tk.Tk):
         self.title("Система учёта пациентов и приёмов")
         self.geometry("1200x700")
 
-        # --- Состояния фильтров ---
+
         self.patient_name_filter = ""
         self.appointment_date_filter = None
-        # ---------------------------
 
-        # --- Списки найденных записей ---
+
+
         self.found_patients = None
         self.found_appointments = None
-        # -------------------------------
 
-        # --- Меню ---
+
+
         menubar = tk.Menu(self)
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Загрузить пациентов", command=self.load_patients)
@@ -58,18 +57,17 @@ class App(tk.Tk):
         menubar.add_cascade(label="О программе", menu=about_menu)
 
         self.config(menu=menubar)
-        # ---------
 
-        # --- Notebook (вкладки) ---
+
+
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        # --------------------------
 
-        # --- Вкладка "Пациенты" ---
+
         self.patient_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.patient_frame, text="Пациенты")
 
-        # --- ToolStrip для пациентов ---
+
         patient_toolbar = tk.Frame(self.patient_frame, relief=tk.RAISED, borderwidth=1)
         patient_toolbar.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
         tk.Button(patient_toolbar, text="Добавить", command=self.add_patient).pack(side=tk.LEFT, padx=2)
@@ -77,14 +75,14 @@ class App(tk.Tk):
         tk.Button(patient_toolbar, text="Загрузить", command=self.load_patients).pack(side=tk.LEFT, padx=2)
         tk.Button(patient_toolbar, text="Сохранить", command=self.save_patients).pack(side=tk.LEFT, padx=2)
 
-        # --- Таблица пациентов ---
+
         self.patient_table = ttk.Treeview(self.patient_frame, columns=("OMS_Policy", "Full_Name", "Birth_Date"), show="headings")
         for col in ("OMS_Policy", "Full_Name", "Birth_Date"):
             self.patient_table.heading(col, text=col)
             self.patient_table.column(col, anchor="center", width=250)
         self.patient_table.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # --- Фильтр пациентов (Поле 2 - Full_Name) ---
+
         patient_filter_frame = tk.Frame(self.patient_frame)
         patient_filter_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=2)
         tk.Label(patient_filter_frame, text="Фильтр по ФИО (Поле 2):").pack(side=tk.LEFT)
@@ -93,13 +91,13 @@ class App(tk.Tk):
         tk.Button(patient_filter_frame, text="Применить", command=self.apply_patient_filter).pack(side=tk.LEFT, padx=3)
         tk.Button(patient_filter_frame, text="Сброс", command=self.clear_patient_filter).pack(side=tk.LEFT, padx=3)
         tk.Button(patient_filter_frame, text="Сброс всех фильтров", command=self.clear_search).pack(side=tk.LEFT, padx=3)
-        # --------------------------
 
-        # --- Вкладка "Приёмы" ---
+
+
         self.appointment_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.appointment_frame, text="Приёмы")
 
-        # --- ToolStrip для приёмов ---
+
         appointment_toolbar = tk.Frame(self.appointment_frame, relief=tk.RAISED, borderwidth=1)
         appointment_toolbar.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
         tk.Button(appointment_toolbar, text="Добавить", command=self.add_appointment).pack(side=tk.LEFT, padx=2)
@@ -107,14 +105,14 @@ class App(tk.Tk):
         tk.Button(appointment_toolbar, text="Загрузить", command=self.load_appointments).pack(side=tk.LEFT, padx=2)
         tk.Button(appointment_toolbar, text="Сохранить", command=self.save_appointments).pack(side=tk.LEFT, padx=2)
 
-        # --- Таблица приёмов ---
+
         self.appointment_table = ttk.Treeview(self.appointment_frame, columns=("OMS_Policy", "Diagnosis", "Doctor", "Appointment_Date"), show="headings")
         for col in ("OMS_Policy", "Diagnosis", "Doctor", "Appointment_Date"):
             self.appointment_table.heading(col, text=col)
             self.appointment_table.column(col, anchor="center", width=200)
         self.appointment_table.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # --- Фильтр приёмов (Поле 4 - Appointment_Date) ---
+
         appointment_filter_frame = tk.Frame(self.appointment_frame)
         appointment_filter_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=2)
         tk.Label(appointment_filter_frame, text="Фильтр по дате приёма (Поле 4, dd mmm yyyy):").pack(side=tk.LEFT)
@@ -123,13 +121,12 @@ class App(tk.Tk):
         tk.Button(appointment_filter_frame, text="Применить", command=self.apply_appointment_filter).pack(side=tk.LEFT, padx=3)
         tk.Button(appointment_filter_frame, text="Сброс", command=self.clear_appointment_filter).pack(side=tk.LEFT, padx=3)
         tk.Button(appointment_filter_frame, text="Сброс всех фильтров", command=self.clear_search).pack(side=tk.LEFT, padx=3)
-        # ---------------------------
 
-        # --- Инициализация таблиц ---
+
         self.refresh_tables()
 
     def refresh_tables(self):
-        # --- Обновление таблицы пациентов ---
+
         for row in self.patient_table.get_children():
             self.patient_table.delete(row)
 
@@ -145,7 +142,6 @@ class App(tk.Tk):
         for patient in patients_to_show:
             self.patient_table.insert("", tk.END, values=(patient.oms_policy, patient.full_name, str(patient.birth_date)))
 
-        # --- Обновление таблицы приёмов ---
         for row in self.appointment_table.get_children():
             self.appointment_table.delete(row)
 
@@ -161,7 +157,6 @@ class App(tk.Tk):
         for appointment in appointments_to_show:
             self.appointment_table.insert("", tk.END, values=(appointment.oms_policy, appointment.diagnosis, appointment.doctor, str(appointment.appointment_date)))
 
-    # --- Загрузка/Сохранение ---
     def load_patients(self):
         path = filedialog.askopenfilename(title="Файл с пациентами", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
         if path:
@@ -210,7 +205,6 @@ class App(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Ошибка", str(e))
 
-    # --- Добавление ---
     def add_patient(self):
         try:
             oms_str = simpledialog.askstring("Добавить пациента", "Полис ОМС (16-значное целое число):")
@@ -260,7 +254,6 @@ class App(tk.Tk):
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
 
-    # --- Удаление ---
     def delete_patient(self):
         sel = self.patient_table.focus()
         if not sel:
@@ -306,7 +299,6 @@ class App(tk.Tk):
         else:
             messagebox.showerror("Ошибка", "Приём не найден")
 
-    # --- Фильтрация ---
     def apply_patient_filter(self):
         """Фильтр пациентов по ФИО с выводом количества шагов"""
         self.patient_name_filter = self.patient_name_filter_entry.get().strip()
@@ -336,7 +328,6 @@ class App(tk.Tk):
                 messagebox.showerror("Ошибка", f"Некорректный формат даты: {e}\nИспользуйте: dd mmm yyyy (например: 20 Nov 2024)")
                 return
             
-            # Поиск в AVL-дереве с подсчётом шагов
             self.found_appointments, steps = db.find_appointments_by_date_steps(date_filter)
             messagebox.showinfo("Результат поиска", 
                 f"Найдено приёмов: {len(self.found_appointments)}\n"
@@ -365,7 +356,6 @@ class App(tk.Tk):
         win.title("Отчёт: Пациенты и Приёмы")
         win.geometry("1100x550")
 
-        # Информационная панель
         info_frame = tk.Frame(win, bg="#e8f4f8", height=40)
         info_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
         info_frame.pack_propagate(False)
@@ -382,7 +372,6 @@ class App(tk.Tk):
             report_table.column(col, anchor="center", width=150)
         report_table.pack(fill="both", expand=True, padx=10, pady=5)
 
-        # Используем отфильтрованные приёмы или все
         visible_appointments = []
         if self.found_appointments is not None:
             visible_appointments = list(self.found_appointments)
@@ -406,7 +395,6 @@ class App(tk.Tk):
                 report_line = f"{patient.oms_policy};{patient.full_name};{patient.birth_date};{appointment.diagnosis};{appointment.doctor};{appointment.appointment_date}"
                 report_lines.append(report_line)
 
-        # Кнопка сохранения
         button_frame = tk.Frame(win)
         button_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
         
@@ -438,7 +426,6 @@ class App(tk.Tk):
                 except Exception as e:
                     messagebox.showerror("Ошибка сохранения отчёта", str(e))
 
-    # --- Отладка (текстовая) ---
     def show_debug_window(self):
         win = tk.Toplevel(self)
         win.title("Отладка структур данных (текстовый вывод)")
@@ -468,7 +455,6 @@ class App(tk.Tk):
 
         text.config(state="disabled")
 
-    # --- Визуализация ---
     def show_visualization_window(self):
         """Открывает окно визуализации структур данных"""
         try:
@@ -479,7 +465,6 @@ class App(tk.Tk):
         except Exception as e:
             messagebox.showerror("Ошибка", f"Ошибка при открытии визуализации:\n{e}")
 
-    # --- О программе ---
     def show_about(self):
         messagebox.showinfo(
             "О программе",
@@ -498,7 +483,6 @@ class App(tk.Tk):
         )
 
 
-# --- Запуск приложения ---
 if __name__ == "__main__":
     try:
         app = App()
