@@ -1,5 +1,5 @@
 # hash_table.py (Статическая ХТ с методом середины квадрата)
-
+import math
 import ctypes
 from typing import Optional
 
