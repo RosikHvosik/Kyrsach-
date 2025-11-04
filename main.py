@@ -32,11 +32,13 @@ class App(tk.Tk):
         patient_menu = tk.Menu(menubar, tearoff=0)
         patient_menu.add_command(label="Добавить пациента", command=self.add_patient)
         patient_menu.add_command(label="Удалить пациента", command=self.delete_patient)
+        patient_menu.add_command(label="Найти пациента", command=self.search_patient)
         menubar.add_cascade(label="Пациент", menu=patient_menu)
 
         appointment_menu = tk.Menu(menubar, tearoff=0)
         appointment_menu.add_command(label="Добавить приём", command=self.add_appointment)
         appointment_menu.add_command(label="Удалить приём", command=self.delete_appointment)
+        appointment_menu.add_command(label="Найти приём", command=self.search_appointment)
         menubar.add_cascade(label="Приём", menu=appointment_menu)
 
         report_menu = tk.Menu(menubar, tearoff=0)
@@ -66,6 +68,7 @@ class App(tk.Tk):
         patient_toolbar.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
         tk.Button(patient_toolbar, text="Добавить", command=self.add_patient).pack(side=tk.LEFT, padx=2)
         tk.Button(patient_toolbar, text="Удалить", command=self.delete_patient).pack(side=tk.LEFT, padx=2)
+        tk.Button(patient_toolbar, text="Найти", command=self.search_patient).pack(side=tk.LEFT, padx=2)
         tk.Button(patient_toolbar, text="Загрузить", command=self.load_patients).pack(side=tk.LEFT, padx=2)
         tk.Button(patient_toolbar, text="Сохранить", command=self.save_patients).pack(side=tk.LEFT, padx=2)
 
@@ -93,6 +96,7 @@ class App(tk.Tk):
         appointment_toolbar.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
         tk.Button(appointment_toolbar, text="Добавить", command=self.add_appointment).pack(side=tk.LEFT, padx=2)
         tk.Button(appointment_toolbar, text="Удалить", command=self.delete_appointment).pack(side=tk.LEFT, padx=2)
+        tk.Button(appointment_toolbar, text="Найти", command=self.search_appointment).pack(side=tk.LEFT, padx=2)
         tk.Button(appointment_toolbar, text="Загрузить", command=self.load_appointments).pack(side=tk.LEFT, padx=2)
         tk.Button(appointment_toolbar, text="Сохранить", command=self.save_appointments).pack(side=tk.LEFT, padx=2)
 
@@ -286,6 +290,77 @@ class App(tk.Tk):
             messagebox.showinfo("Успех", "Приём удалён")
         else:
             messagebox.showerror("Ошибка", "Приём не найден")
+
+    # ========== ПОИСК В СПРАВОЧНИКАХ ==========
+    
+    def search_patient(self):
+        """Поиск пациента по всем полям"""
+        try:
+            oms_str = simpledialog.askstring("Найти пациента", "Полис ОМС:")
+            if not oms_str:
+                return
+            oms = int(oms_str)
+            
+            full_name = simpledialog.askstring("Найти пациента", "ФИО:")
+            if full_name is None:
+                return
+            
+            birth_date_str = simpledialog.askstring("Найти пациента", "Дата рождения (dd mmm yyyy, например: 15 Jan 1980):")
+            if not birth_date_str:
+                return
+
+            patient, steps = db.find_patient_by_all_fields_steps(oms, full_name, birth_date_str)
+            
+            if patient:
+                messagebox.showinfo("Результат поиска", 
+                    f"Пациент найден!\n\n"
+                    f"OMS Policy: {patient.oms_policy}\n"
+                    f"ФИО: {patient.full_name}\n"
+                    f"Дата рождения: {patient.birth_date}\n\n"
+                    f"Количество шагов поиска в ХТ: {steps}")
+            else:
+                messagebox.showinfo("Результат поиска", 
+                    f"Пациент не найден\n\n"
+                    f"Количество шагов поиска в ХТ: {steps}")
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
+
+    def search_appointment(self):
+        """Поиск приёма по всем полям"""
+        try:
+            oms_str = simpledialog.askstring("Найти приём", "Полис ОМС пациента:")
+            if not oms_str:
+                return
+            oms = int(oms_str)
+            
+            diagnosis = simpledialog.askstring("Найти приём", "Диагноз:")
+            if diagnosis is None:
+                return
+            
+            doctor = simpledialog.askstring("Найти приём", "Врач (ФИО):")
+            if doctor is None:
+                return
+            
+            date_str = simpledialog.askstring("Найти приём", "Дата приёма (dd mmm yyyy, например: 20 Nov 2024):")
+            if not date_str:
+                return
+
+            appointment, steps = db.find_appointment_by_all_fields_steps(oms, diagnosis, doctor, date_str)
+            
+            if appointment:
+                messagebox.showinfo("Результат поиска", 
+                    f"Приём найден!\n\n"
+                    f"OMS Policy: {appointment.oms_policy}\n"
+                    f"Диагноз: {appointment.diagnosis}\n"
+                    f"Врач: {appointment.doctor}\n"
+                    f"Дата приёма: {appointment.appointment_date}\n\n"
+                    f"Количество шагов поиска в AVL-дереве: {steps}")
+            else:
+                messagebox.showinfo("Результат поиска", 
+                    f"Приём не найден\n\n"
+                    f"Количество шагов поиска в AVL-дереве: {steps}")
+        except Exception as e:
+            messagebox.showerror("Ошибка", str(e))
 
     # ========== ФИЛЬТРЫ СПРАВОЧНИКОВ ==========
     

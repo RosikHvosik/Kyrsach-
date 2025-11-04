@@ -35,27 +35,36 @@ class HashTable:
         self._assert_int(key)
         if key < 0:
             raise ValueError("Key must be non-negative for 'middle square' hash.")
-        # Убедимся, что ключ положительный
+
         k = key
-        # Возводим в квадрат
         k_squared = k * k
-        # Преобразуем в строку
-        str_squared = str(k_squared)
-        # Добавим нули в начало, если нужно, чтобы длина была чётной
-        # и была хотя бы 2 цифры
-        while len(str_squared) < 2:
-            str_squared = '0' + str_squared
-        # Если длина нечётная, добавим ведущий ноль
-        if len(str_squared) % 2 != 0:
-            str_squared = '0' + str_squared
-        # Найдем центральные цифры
-        mid_start = len(str_squared) // 2 - 1
-        mid_end = mid_start + 2
-        middle_digits_str = str_squared[mid_start:mid_end]
-        # Преобразуем обратно в число
-        middle_digits_int = int(middle_digits_str)
+
+        # Считаем количество цифр
+        if k_squared == 0:
+            digit_count = 1
+        else:
+            digit_count = int(math.log10(k_squared)) + 1
+
+        # Если нечётное — добавляем ведущий ноль (умножаем на 10)
+        if digit_count % 2 != 0:
+            k_squared_padded = k_squared * 10
+            padded_digit_count = digit_count + 1
+        else:
+            k_squared_padded = k_squared
+            padded_digit_count = digit_count
+
+        # r — количество младших разрядов, которые нужно отбросить
+        r = (padded_digit_count // 2) - 1
+        # d — количество цифр, которые берём из середины (всегда 2)
+        d = 2
+
+        # Отбрасываем r младших разрядов
+        temp = k_squared_padded // (10 ** r)
+        # Берём d цифр с конца (остаток от деления на 10^d)
+        middle_digits = temp % (10 ** d)
+
         # Применяем модуль от capacity
-        return middle_digits_int % self.capacity
+        return middle_digits % self.capacity
     # --- КОНЕЦ НОВОЙ ХЕШ-ФУНКЦИИ ---
 
     def probe(self, h0: int, i: int) -> int:
