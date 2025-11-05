@@ -71,6 +71,7 @@ class RelationalDatabase:
             print("Maximum size of appointment array has been reached")
             return False
 
+    # Проверка существования пациента
         if self.patient_ht.search(oms_policy)[0] is None:
             print(f"Cannot add appointment: Patient with OMS Policy {oms_policy} does not exist.")
             return False
@@ -82,6 +83,20 @@ class RelationalDatabase:
             print(f"Failed to add appointment: {e}")
             return False
 
+    # ✅ ПРОВЕРКА НА ДУБЛИКАТ ПРИЁМА
+        node = self.appointment_tree.find(oms_policy)
+        if node:
+            for idx in node.values:
+                existing_app = self.appointment_arr[idx]
+                if (existing_app and
+                    existing_app.oms_policy == oms_policy and
+                    existing_app.diagnosis == diagnosis and
+                    existing_app.doctor == doctor and
+                    existing_app.appointment_date == appointment_date):
+                    print(f"Appointment already exists: OMS={oms_policy}, Diagnosis='{diagnosis}', Doctor='{doctor}', Date={appointment_date}")
+                    return False
+
+    # Добавление в структуры данных
         self.appointment_tree.insert(appointment.oms_policy, self.first_empty_appointment)
         self.appointment_date_tree.insert(appointment.appointment_date, self.first_empty_appointment)
 
