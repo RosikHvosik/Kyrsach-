@@ -76,7 +76,8 @@ class VisualizationWindow(tk.Toplevel):
         
         # Если ячеек мало, показываем первые 30 ячеек для примера структуры
         if len(cells_to_draw) < 30:
-            cells_to_draw = [(i, ht._elements[i]) for i in range(min(30, ht.capacity))]
+            #cells_to_draw = [(i, ht._elements[i]) for i in range(min(30, ht.capacity))]
+            cells_to_draw = [(i, ht._elements[i]) for i in range(ht.capacity)]
         
         y_offset = start_y
         for idx, slot in cells_to_draw:
