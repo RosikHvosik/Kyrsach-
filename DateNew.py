@@ -3,15 +3,19 @@
 import ctypes
 from typing import Optional
 
-# Словарь для сопоставления названий месяцев и их номеров (ключи в нижнем регистре)
+# Словарь для сопоставления РУССКИХ названий месяцев и их номеров (ключи в нижнем регистре)
 MONTHS_MAP = {
-    "jan": 1, "feb": 2, "mar": 3, "apr": 4,
-    "may": 5, "jun": 6, "jul": 7, "aug": 8,
-    "sep": 9, "oct": 10, "nov": 11, "dec": 12
+    "янв": 1, "фев": 2, "мар": 3, "апр": 4,
+    "май": 5, "июн": 6, "июл": 7, "авг": 8,
+    "сен": 9, "окт": 10, "ноя": 11, "дек": 12
 }
 
-# Обратное сопоставление для __repr__ (ключи - номера, значения - в верхнем регистре)
-MONTHS_NAMES = {v: k.capitalize() for k, v in MONTHS_MAP.items()}
+# Обратное сопоставление для __repr__ (ключи - номера, значения - в нужном регистре)
+MONTHS_NAMES = {
+    1: "янв", 2: "фев", 3: "мар", 4: "апр",
+    5: "май", 6: "июн", 7: "июл", 8: "авг",
+    9: "сен", 10: "окт", 11: "ноя", 12: "дек"
+}
 
 class DateNew:
     # Используем ctypes для массива дней в месяце (индекс 0 не используется)
@@ -23,7 +27,7 @@ class DateNew:
 
         parts = date_str.strip().split(' ')
         if len(parts) != 3:
-            raise ValueError(f"Date must be in format 'DD MMM YYYY', got '{date_str}'")
+            raise ValueError(f"Дата должна быть в формате 'ДД МММ ГГГГ' (например: 15 янв 1980), получено: '{date_str}'")
 
         day_str, month_str, year_str = parts
 
@@ -32,8 +36,8 @@ class DateNew:
         year = int(year_str)
 
         # Валидация месяца (по названию)
-        self._check_valid_month_name(month_str) # <-- Проверка на нижний регистр
-        month = MONTHS_MAP[month_str.lower()] # <-- Извлечение по нижнему регистру
+        self._check_valid_month_name(month_str)
+        month = MONTHS_MAP[month_str.lower()]
 
         # Валидация дня
         self._check_valid_day_for_month(day_str, month, year)
@@ -72,29 +76,29 @@ class DateNew:
         try:
             year = int(s)
         except ValueError:
-            raise ValueError(f"Invalid year format: {s!r}")
+            raise ValueError(f"Неверный формат года: {s!r}")
         if not (1 <= year <= 9999):
-            raise ValueError(f"Year must be between 1 and 9999, got {year}")
+            raise ValueError(f"Год должен быть от 1 до 9999, получено {year}")
 
     @staticmethod
     def _check_valid_month_name(s: str) -> None:
-        if s.lower() not in MONTHS_MAP: # <-- Проверка на нижний регистр
-            valid_months = ", ".join(MONTHS_MAP.keys()) # <-- Вывод допустимых месяцев в нижнем регистре
-            raise ValueError(f"Invalid month name: {s!r}. Valid names are: {valid_months}")
+        if s.lower() not in MONTHS_MAP:
+            valid_months = ", ".join(MONTHS_MAP.keys())
+            raise ValueError(f"Неверное название месяца: {s!r}. Допустимые: {valid_months}")
 
     @classmethod
     def _check_valid_day_for_month(cls, day_str: str, month: int, year: int) -> None:
         try:
             day = int(day_str)
         except ValueError:
-            raise ValueError(f"Invalid day format: {day_str!r}")
+            raise ValueError(f"Неверный формат дня: {day_str!r}")
         # Определение максимального дня в месяце
         max_day = cls.DAYS_IN_MONTH[month]
         if month == 2 and cls._is_leap_year(year):
             max_day = 29
 
         if not (1 <= day <= max_day):
-            raise ValueError(f"Day {day} is out of range for month {MONTHS_NAMES[month]} and year {year}")
+            raise ValueError(f"День {day} вне диапазона для месяца {MONTHS_NAMES[month]} и года {year}")
 
     @staticmethod
     def _is_leap_year(year: int) -> bool:
@@ -103,19 +107,16 @@ class DateNew:
 # --- Тестирование ---
 if __name__ == "__main__":
     try:
-        d1 = DateNew("01 Jan 2020")
-        d2 = DateNew("29 Feb 2024") # Високосный
-        # d3 = DateNew("31 Apr 2023") # Неверный день
+        d1 = DateNew("01 янв 2020")
+        d2 = DateNew("29 фев 2024")  # Високосный
+        d3 = DateNew("15 мар 2023")
         print("DateNew objects created successfully.")
+        print(d1)  # 01 янв 2020
+        print(d2)  # 29 фев 2024
+        print(d3)  # 15 мар 2023
+        print(d1 < d2)  # True
+        print(d1 == DateNew("01 янв 2020"))  # True
     except ValueError as e:
         print(f"ValueError: {e}")
     except TypeError as e:
         print(f"TypeError: {e}")
-
-    print(d1) # 01 Jan 2020
-    print(d2) # 29 Feb 2024
-    print(d1 < d2) # True
-    print(d1 == DateNew("01 Jan 2020")) # True
-    # print(DateNew("32 Jan 2023")) # ValueError
-    # print(DateNew("01 Xxx 2023")) # ValueError
-    # print(DateNew(123)) # TypeError

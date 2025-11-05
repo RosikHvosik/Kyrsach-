@@ -28,9 +28,9 @@ class Patient:
         if oms_policy <= 0:
             raise ValueError("The OMS Policy must be a positive number")
         # Можно добавить проверку на длину, если нужно, например, 16 цифр
-        # str_oms = str(oms_policy)
-        # if len(str_oms) != 16: # Пример длины
-        #     raise ValueError("The OMS Policy must be 16 digits long")
+        str_oms = str(oms_policy)
+        if len(str_oms) != 16: # Пример длины
+            raise ValueError("The OMS Policy must be 16 digits long")
 
     @staticmethod
     def validate_full_name(full_name: str) -> None:

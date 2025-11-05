@@ -209,6 +209,89 @@ class RelationalDatabase:
                 if app:
                     appointments.append(app)
         return appointments, steps
+    
+    def find_patient_by_all_fields_steps(self, oms_policy: int, full_name: str, birth_date_str:str) -> tuple:
+        """
+    Поиск пациента по ВСЕМ полям (OMS + ФИО + Дата рождения).
+    Сначала ищем в ХТ по OMS, затем проверяем остальные поля.
+    
+    Args:
+        oms_policy: Полис ОМС пациента
+        full_name: ФИО пациента
+        birth_date_str: Дата рождения в формате "ДД МММ ГГГГ"
+    
+    Returns:
+        tuple: (Patient или None, количество шагов поиска в ХТ)
+    """
+        try:
+            birth_date = DateNew(birth_date_str)
+        except (ValueError, TypeError) as e:
+            print(f"Invalid date format: {e}")
+            return None, 0
+
+        # Поиск в ХТ по OMS
+        result = self.patient_ht.search(oms_policy)
+        item = result[0]
+        steps = result[1]
+    
+        if item is None:
+            return None, steps
+    
+        patient = self.patient_arr[item.value]
+    
+        # Проверяем остальные поля
+        if patient.full_name == full_name and patient.birth_date == birth_date:
+            return patient, steps
+        else:
+            return None, steps
+        
+    def find_appointment_by_all_fields_steps(self, oms_policy: int, diagnosis: str, doctor: str, date_str: str) -> tuple:
+        """
+    Поиск приёма по ВСЕМ полям (OMS + Диагноз + Врач + Дата).
+    Сначала ищем в AVL-дереве по OMS, затем проверяем остальные поля.
+    
+    Args:
+        oms_policy: Полис ОМС пациента
+        diagnosis: Диагноз
+        doctor: ФИО врача
+        date_str: Дата приёма в формате "ДД МММ ГГГГ"
+    
+    Returns:
+        tuple: (Appointment или None, количество шагов поиска в AVL-дереве)
+        """
+        try:
+            target_date = DateNew(date_str)
+        except (ValueError, TypeError) as e:
+            print(f"Invalid date format: {e}")
+            return None, 0
+
+        # Поиск в AVL по OMS
+        node = self.appointment_tree.root
+        steps = 0
+        found_node = None
+        while node:
+            steps += 1
+            if oms_policy < node.key:
+                node = node.left
+            elif oms_policy > node.key:
+                node = node.right
+            else:
+                found_node = node
+                break
+
+            if not found_node:
+                return None, steps
+
+        # Проверяем все приёмы с этим OMS на соответствие остальным полям
+        for idx in found_node.values:
+            app = self.appointment_arr[idx]
+            if (app and
+                app.diagnosis == diagnosis and
+                app.doctor == doctor and
+                app.appointment_date == target_date):
+                return app, steps
+
+        return None, steps
 
     # --- Фильтрация (просмотр) ---
     def filter_patients_by_name(self, target_name: str) -> MyList[Patient]:

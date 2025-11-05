@@ -106,7 +106,7 @@ class App(tk.Tk):
             self.appointment_table.column(col, anchor="center", width=200)
         self.appointment_table.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # ИСПРАВЛЕНО: Фильтр по врачу (Поле 3)
+        # Фильтр по врачу (Поле 3)
         appointment_filter_frame = tk.Frame(self.appointment_frame)
         appointment_filter_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=2)
         tk.Label(appointment_filter_frame, text="Фильтр по врачу (Поле 3):").pack(side=tk.LEFT)
@@ -206,7 +206,7 @@ class App(tk.Tk):
             full_name = simpledialog.askstring("Добавить пациента", "ФИО:")
             if not full_name:
                 return
-            birth_date_str = simpledialog.askstring("Добавить пациента", "Дата рождения (dd mmm yyyy, например: 15 Jan 1980):")
+            birth_date_str = simpledialog.askstring("Добавить пациента", "Дата рождения (формат: ДД МММ ГГГГ, например: 15 янв 1980):")
             if not birth_date_str:
                 return
 
@@ -232,7 +232,7 @@ class App(tk.Tk):
             doctor = simpledialog.askstring("Добавить приём", "Врач (ФИО):")
             if not doctor:
                 return
-            date_str = simpledialog.askstring("Добавить приём", "Дата приёма (dd mmm yyyy, например: 20 Nov 2024):")
+            date_str = simpledialog.askstring("Добавить приём", "Дата приёма (формат: ДД МММ ГГГГ, например: 20 ноя 2024):")
             if not date_str:
                 return
 
@@ -305,7 +305,7 @@ class App(tk.Tk):
             if full_name is None:
                 return
             
-            birth_date_str = simpledialog.askstring("Найти пациента", "Дата рождения (dd mmm yyyy, например: 15 Jan 1980):")
+            birth_date_str = simpledialog.askstring("Найти пациента", "Дата рождения (формат: ДД МММ ГГГГ, например: 15 янв 1980):")
             if not birth_date_str:
                 return
 
@@ -341,7 +341,7 @@ class App(tk.Tk):
             if doctor is None:
                 return
             
-            date_str = simpledialog.askstring("Найти приём", "Дата приёма (dd mmm yyyy, например: 20 Nov 2024):")
+            date_str = simpledialog.askstring("Найти приём", "Дата приёма (формат: ДД МММ ГГГГ, например: 20 ноя 2024):")
             if not date_str:
                 return
 
@@ -449,7 +449,7 @@ class App(tk.Tk):
         tk.Label(row3, text="Дата приёма (Справ.2, Поле 4):", width=28, anchor="w").pack(side=tk.LEFT)
         filter_date_entry = tk.Entry(row3, width=30)
         filter_date_entry.pack(side=tk.LEFT, padx=5)
-        tk.Label(row3, text="(формат: dd mmm yyyy, например: 20 Nov 2024)", font=("Arial", 8), fg="gray").pack(side=tk.LEFT, padx=5)
+        tk.Label(row3, text="(формат: ДД МММ ГГГГ, например: 20 ноя 2024)", font=("Arial", 8), fg="gray").pack(side=tk.LEFT, padx=5)
 
         # Кнопки управления фильтрами
         button_row = tk.Frame(filter_frame)
@@ -494,7 +494,7 @@ class App(tk.Tk):
             try:
                 filter_date = DateNew(date_text)
             except (ValueError, TypeError) as e:
-                messagebox.showerror("Ошибка", f"Некорректный формат даты: {e}\nИспользуйте: dd mmm yyyy")
+                messagebox.showerror("Ошибка", f"Некорректный формат даты: {e}\nИспользуйте: ДД МММ ГГГГ (например: 20 ноя 2024)")
                 return
 
         self.load_report_data(report_table, stats_label, filter_name, filter_doctor, filter_date)
@@ -625,7 +625,9 @@ class App(tk.Tk):
             "Отчёт с фильтрацией:\n"
             "• ФИО пациента (Справ.1, Поле 2)\n"
             "• Врач (Справ.2, Поле 3)\n"
-            "• Дата приёма (Справ.2, Поле 4)"
+            "• Дата приёма (Справ.2, Поле 4)\n\n"
+            "Формат дат: ДД МММ ГГГГ (например: 15 янв 1980)\n"
+            "Допустимые месяцы: янв, фев, мар, апр, май, июн, июл, авг, сен, окт, ноя, дек"
         )
 
 
